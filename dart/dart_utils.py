@@ -104,15 +104,15 @@ def sub_docs(rcp_no, match=None):
         
     ## 하위 문서 URL 추출
     multi_page_re = (
-        "\s+node[12]\['text'\][ =]+\"(.*?)\"\;" 
-        "\s+node[12]\['id'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['eleId'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['offset'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['length'\][ =]+\"(\d+)\";"
-        "\s+node[12]\['dtd'\][ =]+\"(.*?)\";"
-        "\s+node[12]\['tocNo'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['text'\][ =]+\"(.*?)\"\;" 
+        "\\s+node[12]\['id'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['eleId'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['offset'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['length'\][ =]+\"(\d+)\";"
+        "\\s+node[12]\['dtd'\][ =]+\"(.*?)\";"
+        "\\s+node[12]\['tocNo'\][ =]+\"(\d+)\";"
     )
     matches = re.findall(multi_page_re, r.text)
     if len(matches) > 0:
