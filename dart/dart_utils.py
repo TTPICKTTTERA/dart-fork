@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # 2020-2022 FinanceData.KR http://financedata.kr fb.com/financedata
 
 import os
@@ -15,6 +15,7 @@ import difflib
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.3904.108 Safari/537.36'
 
+
 def _validate_dates(start, end):
     start = to_datetime(start)
     end = to_datetime(end)
@@ -25,11 +26,12 @@ def _validate_dates(start, end):
         end = datetime.today()
     return start, end
 
+
 def _requests_get_cache(url, headers=None):
     docs_cache_dir = 'docs_cache'
     if not os.path.exists(docs_cache_dir):
         os.makedirs(docs_cache_dir)
-    
+
     fn = os.path.join(docs_cache_dir, quote_plus(url))
     if not os.path.isfile(fn) or os.path.getsize(fn) == 0:
         with open(fn, 'wt') as f:
@@ -42,17 +44,17 @@ def _requests_get_cache(url, headers=None):
             return xhtml_text
     return xhtml_text
 
-      
+
 def list_date_ex(date=None, cache=True):
     '''
     지정한 날짜의 보고서의 목록 전체를 데이터프레임으로 반환 합니다(시간 포함)
     * date: 조회일 (기본값: 당일)
     '''
-    date = pd.to_datetime(date) if date else datetime.today() 
+    date = pd.to_datetime(date) if date else datetime.today()
     date_str = date.strftime('%Y.%m.%d')
 
     columns = ['rcept_dt', 'corp_cls', 'corp_name', 'rcept_no', 'report_nm', 'flr_nm', 'rm']
-   
+
     df_list = []
     for page in range(1, 100):
         time.sleep(0.1)
@@ -101,18 +103,18 @@ def sub_docs(rcp_no, match=None):
         r = requests.get(rcp_no, headers={'User-Agent': USER_AGENT})
     else:
         raise ValueError('invalid `rcp_no`(or url)')
-        
+
     ## 하위 문서 URL 추출
     multi_page_re = (
-        "\\s+node[12]\['text'\][ =]+\"(.*?)\"\;" 
-        "\\s+node[12]\['id'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['eleId'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['offset'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['length'\][ =]+\"(\d+)\";"
-        "\\s+node[12]\['dtd'\][ =]+\"(.*?)\";"
-        "\\s+node[12]\['tocNo'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['text'\][ =]+\"(.*?)\"\;"
+        r"\s+node[12]\['id'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['eleId'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['offset'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['length'\][ =]+\"(\d+)\";"
+        r"\s+node[12]\['dtd'\][ =]+\"(.*?)\";"
+        r"\s+node[12]\['tocNo'\][ =]+\"(\d+)\";"
     )
     matches = re.findall(multi_page_re, r.text)
     if len(matches) > 0:
@@ -129,7 +131,7 @@ def sub_docs(rcp_no, match=None):
             df = df.sort_values('similarity', ascending=False)
         return df[['title', 'url']]
     else:
-        single_page_re = "\t\tviewDoc\('(\d+)', '(\d+)', '(\d+)', '(\d+)', '(\d+)', '(\S+)',''\)\;"
+        single_page_re = r"\s+viewDoc\('(\d+)', '(\d+)', '(\d+)', '(\d+)', '(\d+)', '(\S+)',''\)\;"
         matches = re.findall(single_page_re, r.text)
         if len(matches) > 0:
             doc_title = BeautifulSoup(r.text, features="lxml").title.text.strip()
@@ -139,9 +141,9 @@ def sub_docs(rcp_no, match=None):
             return pd.DataFrame([[doc_title, doc_url]], columns=['title', 'url'])
         else:
             raise Exception(f'{url} 하위 페이지를 포함하고 있지 않습니다')
-        
+
     return pd.DataFrame(None, columns=['title', 'url'])
-       
+
 
 def attach_docs(rcp_no, match=None):
     '''
@@ -163,7 +165,7 @@ def attach_docs(rcp_no, match=None):
         title = ' '.join(opt.text.split())
         url = f'http://dart.fss.or.kr/dsaf001/main.do?{opt["value"]}'
         row_list.append([title, url])
-        
+
     df = pd.DataFrame(row_list, columns=['title', 'url'])
     if match:
         df['similarity'] = df.title.apply(lambda x: difflib.SequenceMatcher(None, x, match).ratio())
@@ -171,18 +173,18 @@ def attach_docs(rcp_no, match=None):
     return df[['title', 'url']].copy()
 
 
-def attach_files(arg): # rcp_no or URL
+def attach_files(arg):  # rcp_no or URL
     '''
     접수번호(rcp_no)에 속한 첨부파일 목록정보를 dict 형식으로 반환합니다.
     * rcp_no: 접수번호를 지정합니다. rcp_no 대신 첨부문서의 URL(http로 시작)을 사용할 수 도 있습니다.
     '''
-    url= arg if arg.startswith('http') else f"http://dart.fss.or.kr/dsaf001/main.do?rcpNo={arg}"
+    url = arg if arg.startswith('http') else f"http://dart.fss.or.kr/dsaf001/main.do?rcpNo={arg}"
     r = requests.get(url, headers={'User-Agent': USER_AGENT})
 
     rcp_no = dcm_no = None
     matches = re.findall(
-        "\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
-     + "\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";", r.text)
+        r"\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
+        + r"\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";", r.text)
     if matches:
         rcp_no = matches[0][0]
         dcm_no = matches[0][1]
