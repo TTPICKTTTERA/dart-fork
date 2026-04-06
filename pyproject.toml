@@ -1,0 +1,11 @@
+[project]
+name = "dart-fork"
+version = "0.1.0"
+description = "OpenDartReader fork"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "requests",
+    "pandas",
+    "bs4",
+]
