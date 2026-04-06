@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+#-*- coding:utf-8 -*-
 # 2020-2022 FinanceData.KR http://financedata.kr fb.com/financedata
 
 import os
@@ -15,7 +15,6 @@ import difflib
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.3904.108 Safari/537.36'
 
-
 def _validate_dates(start, end):
     start = to_datetime(start)
     end = to_datetime(end)
@@ -25,7 +24,6 @@ def _validate_dates(start, end):
     if end is None:
         end = datetime.today()
     return start, end
-
 
 def _requests_get_cache(url, headers=None):
     docs_cache_dir = 'docs_cache'
@@ -106,7 +104,7 @@ def sub_docs(rcp_no, match=None):
 
     ## 하위 문서 URL 추출
     multi_page_re = (
-        r"\s+node[12]\['text'\][ =]+\"(.*?)\"\;"
+        r"\s+node[12]\['text'\][ =]+\"(.*?)\"\;" 
         r"\s+node[12]\['id'\][ =]+\"(\d+)\";"
         r"\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
         r"\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";"
@@ -173,18 +171,18 @@ def attach_docs(rcp_no, match=None):
     return df[['title', 'url']].copy()
 
 
-def attach_files(arg):  # rcp_no or URL
+def attach_files(arg): # rcp_no or URL
     '''
     접수번호(rcp_no)에 속한 첨부파일 목록정보를 dict 형식으로 반환합니다.
     * rcp_no: 접수번호를 지정합니다. rcp_no 대신 첨부문서의 URL(http로 시작)을 사용할 수 도 있습니다.
     '''
-    url = arg if arg.startswith('http') else f"http://dart.fss.or.kr/dsaf001/main.do?rcpNo={arg}"
+    url= arg if arg.startswith('http') else f"http://dart.fss.or.kr/dsaf001/main.do?rcpNo={arg}"
     r = requests.get(url, headers={'User-Agent': USER_AGENT})
 
     rcp_no = dcm_no = None
     matches = re.findall(
-        r"\s+node[12]\['rcpNo'\][ =]+\"(\d+)\";"
-        + r"\s+node[12]\['dcmNo'\][ =]+\"(\d+)\";", r.text)
+        r"\s+node[12]\['rcpNo'][ =]+\"(\d+)\";"
+     + r"\s+node[12]\['dcmNo'][ =]+\"(\d+)\";", r.text)
     if matches:
         rcp_no = matches[0][0]
         dcm_no = matches[0][1]
